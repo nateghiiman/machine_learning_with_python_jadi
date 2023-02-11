@@ -10,8 +10,8 @@ def df_clean(df):
     ### Some Area datas were not correct so we remove the corresponding rows
     df=df[df.Area.apply(lambda x: x.isnumeric())]
     ### Change data type of column "Area"
-    df["Area"]=pd.to_numeric(df.Area)
-    df = df.astype({"Area": float, "Address": str})  #this is another way!
+    #df["Area"]=pd.to_numeric(df.Area)
+    df = df.astype({"Area": float})  #this is another way!
     ### Transform Boolean to int
     df=df.astype({"Elevator":int,"Warehouse":int,"Parking":int})
     ### Some house's Areas were too big and we were asked to ignore them
@@ -82,6 +82,24 @@ def single_reg(cdf,y):
     
 
 
+def multiple_reg(cdf,select,y):
+    mask=np.random.rand(len(cdf))<0.8
+    train=cdf[mask]
+    test=cdf[~mask]
+    reg=LinearRegression()
+    x_train=np.asanyarray(train[select])
+    y_train=np.asanyarray(train[[y]])
+    x_test=np.asanyarray(test[select])
+    y_test=np.asanyarray(test[[y]])
+    reg.fit(x_train,y_train)
+    print("coef=",reg.coef_[0])
+    print("intercept=",reg.intercept_[0])
+    y_predict=reg.predict(x_test)
+    score=reg.score(x_test,y_test)
+    RSS=np.mean((y_predict-y_test)**2)
+    print("Residual Sum of squares= %f" %RSS)
+    print("Variance score= %F" % score)
+    print("R2 score=%f" % r2_score(y_predict,y_test))
 
 
 df=pd.read_csv("C:/python/Jadi_ML/01 Iman/2-1 HousePriceData.csv",index_col=False)
@@ -91,3 +109,6 @@ cdf=df[["Area",'Room', 'Parking', 'Warehouse', 'Elevator','Price(USD)','AddressN
 #cdf.hist()
 #plt.show()   
 single_reg(cdf,"Price(USD)")
+###you can select variables as x of regression:
+select=["Area",'AddressN']
+multiple_reg(cdf,select,"Price(USD)")
